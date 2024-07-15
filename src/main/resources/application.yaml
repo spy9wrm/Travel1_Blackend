@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: Travel
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/travel
+    username:  myuser
+    password:  mypassword
+    driver-class-name: org.postgresql.Driver

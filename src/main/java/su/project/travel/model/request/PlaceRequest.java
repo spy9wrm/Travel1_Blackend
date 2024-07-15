@@ -1,0 +1,12 @@
+package su.project.travel.model.request;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
+public class PlaceRequest {
+    private String search;
+    private int size = 10;
+    private int page = 0;
+}
