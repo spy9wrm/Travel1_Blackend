@@ -19,22 +19,21 @@ import java.util.List;
 @CrossOrigin("*")
 public class PlaceController {
 
-    private final UserService userService;
     private final PlaceService placeService;
 
-    public PlaceController(UserService userService, PlaceService placeService) {
-        this.userService = userService;
+    public PlaceController(PlaceService placeService) {
         this.placeService = placeService;
     }
 
     @PostMapping("getPlace")
-    public ResponseModel<List<PlaceResponse>> getPlace(@RequestBody PlaceRequest placeRequest){
+    public ResponseModel<List<PlaceResponse>> getPlace(@RequestBody PlaceRequest placeRequest) {
         log.info("PlaceController -> GetPlace");
 
         return this.placeService.getAllPlace(placeRequest);
     }
+
     @PostMapping("getPlaceDetails")
-    public ResponseModel<PlaceResponse> getPlaceDetails(@RequestBody PlaceDetailsRequest placeRequest){
+    public ResponseModel<PlaceResponse> getPlaceDetails(@RequestBody PlaceDetailsRequest placeRequest) {
         log.info("PlaceController -> GetPlace");
 
         return this.placeService.getPlaceDetails(placeRequest);

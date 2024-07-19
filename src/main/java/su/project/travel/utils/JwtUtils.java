@@ -12,10 +12,11 @@ public class JwtUtils {
 
     private static final String SECRET_KEY = "travelApplication";
 
-    public static String generateToken(String username, Integer userId) {
+    public static String generateToken(String username, Integer userId,String name) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
         claims.put("userId", userId);
+        claims.put("name", name);
 
         return Jwts.builder()
                 .setClaims(claims)

@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import su.project.travel.model.common.CurrentUser;
 import su.project.travel.utils.JwtUtils;
 
 @Component
@@ -18,8 +19,15 @@ public class JwtInterceptor implements HandlerInterceptor {
             try {
                 Claims claims = JwtUtils.validateToken(token);
                 if (claims != null) {
-                    request.setAttribute("claims", claims);
-                    return true;
+                    // Extract claims and set them into CurrentUser model
+                    CurrentUser currentUser = new CurrentUser();
+                    currentUser.setUserId((Integer) claims.get("userId")); // Assuming userId is Integer
+                    currentUser.setUserName((String) claims.get("username")); // Assuming username is String
+                    currentUser.setName((String) claims.get("name")); // Assuming name is String
+
+                    // Set CurrentUser instance as request attribute
+                    request.setAttribute("currentUser", currentUser);
+                    return true; // Proceed with the request
                 } else {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                     return false;

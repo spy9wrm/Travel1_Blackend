@@ -3,9 +3,14 @@ package su.project.travel.repository.Impl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import su.project.travel.model.request.PlaceDetailsRequest;
 import su.project.travel.model.request.PlaceRequest;
+import su.project.travel.model.request.UserRegisterRequest;
 import su.project.travel.model.response.PlaceOpeningHours;
 import su.project.travel.model.response.PlaceResponse;
 import su.project.travel.repository.PlaceRepository;
@@ -44,6 +49,8 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             sql += " WHERE pl.name LIKE ? ";
             params.add("%" + placeRequest.getSearch() + "%");
         }
+        sql += " ORDER BY pl.place_id ";
+
 
         sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ";
         params.add(placeRequest.getPage() * placeRequest.getSize());
@@ -165,6 +172,10 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         return placeResponses;
     }
+
+
+
+
 
 
 }

@@ -1,10 +1,13 @@
 package su.project.travel.service;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.stereotype.Service;
+import su.project.travel.model.common.CurrentUser;
 import su.project.travel.model.common.UserIdModel;
+import su.project.travel.model.request.UserRegisterRequest;
 import su.project.travel.model.response.JwtResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.AuthRepository;
@@ -30,13 +33,13 @@ public class AuthService {
         }
 
         try {
-            UserIdModel userIdModel = this.authRepository.login(username,password);
-            if(userIdModel == null) {
+            CurrentUser currentUser = this.authRepository.login(username,password);
+            if(currentUser == null) {
                 responseModel.setCode(400);
                 responseModel.setMessage("invalid username or password");
                 return responseModel;
             }
-            String jwtToken = JwtUtils.generateToken(username,userIdModel.getUserId());
+            String jwtToken = JwtUtils.generateToken(username,currentUser.getUserId(),currentUser.getName());
 
             JwtResponse jwtResponse = JwtResponse.builder().token(jwtToken).build();
 
@@ -47,6 +50,24 @@ public class AuthService {
         } catch (Exception e) {
             responseModel.setCode(500);
             responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+    @Transactional
+    public ResponseModel<Void> userRegister(UserRegisterRequest request) {
+        ResponseModel<Void> responseModel = new ResponseModel<>();
+        try {
+            Integer userId = this.authRepository.insertTblUser(request);
+            request.setUserId(userId);
+            this.authRepository.insertToUserFav(request);
+
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+            responseModel.setCode(500);
+            responseModel.setMessage("cannot register user");
         }
         return responseModel;
     }
