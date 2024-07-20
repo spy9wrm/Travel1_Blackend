@@ -11,5 +11,6 @@ import java.util.List;
 public class CreateTripRequest {
     private Integer userId;
     private Integer tripId;
+    private String tripName;
     private List<TripDetails> tripDetailsList;
 }

@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import su.project.travel.model.request.CreateTripRequest;
+import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.TripRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -26,7 +28,7 @@ public class TripService {
     public ResponseModel<Void> addTrip(CreateTripRequest createTripRequest, Integer userId) {
         ResponseModel<Void> responseModel = new ResponseModel<>();
         try {
-            Integer tripId = this.tripRepository.insertTbTrip(userId);
+            Integer tripId = this.tripRepository.insertTbTrip(userId, createTripRequest.getTripName());
             for (int index = 0; index < createTripRequest.getTripDetailsList().size(); index++) {
                 Integer placeId = createTripRequest.getTripDetailsList().get(index).getPlaceId();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -37,6 +39,19 @@ public class TripService {
             responseModel.setCode(200);
             responseModel.setMessage("ok");
         } catch (Exception e) {
+            responseModel.setCode(500);
+            responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+    public ResponseModel<List<InquiryTripResponse>> inquiryTrip(Integer userId) {
+        ResponseModel<List<InquiryTripResponse>> responseModel = new ResponseModel<>();
+        try {
+            List<InquiryTripResponse> list = this.tripRepository.inquiryTripResponseList(userId);
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
+        }catch (Exception e) {
             responseModel.setCode(500);
             responseModel.setMessage(e.getMessage());
         }
