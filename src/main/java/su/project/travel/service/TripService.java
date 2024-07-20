@@ -51,6 +51,7 @@ public class TripService {
             List<InquiryTripResponse> list = this.tripRepository.inquiryTripResponseList(userId);
             responseModel.setCode(200);
             responseModel.setMessage("ok");
+            responseModel.setData(list);
         }catch (Exception e) {
             responseModel.setCode(500);
             responseModel.setMessage(e.getMessage());
