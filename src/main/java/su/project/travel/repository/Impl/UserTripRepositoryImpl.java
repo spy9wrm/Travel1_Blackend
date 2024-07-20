@@ -67,6 +67,7 @@ public class UserTripRepositoryImpl implements TripRepository {
                          inner join (select place_id, unnest(photo) as photo
                                      from tb_place) tp on tp.place_id = td.place_id
                 where tt.user_id = :user_id
+                and tt.is_deleted = 'N'
                 group by tt.trip_id, trip_name, tt.create_date
                 """;
 
