@@ -1,5 +1,6 @@
 package su.project.travel.service;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +22,7 @@ public class TripService {
         this.tripRepository = tripRepository;
     }
 
+    @Transactional
     public ResponseModel<Void> addTrip(CreateTripRequest createTripRequest, Integer userId) {
         ResponseModel<Void> responseModel = new ResponseModel<>();
         try {
