@@ -10,5 +10,6 @@ import java.util.List;
 @Getter
 public class CreateTripRequest {
     private Integer userId;
+    private Integer tripId;
     private List<TripDetails> tripDetailsList;
 }

@@ -6,7 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class TripDetails {
-    Integer tripId;
     Integer placeId;
     String planDate;
 }
