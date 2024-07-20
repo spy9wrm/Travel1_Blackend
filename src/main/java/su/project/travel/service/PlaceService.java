@@ -19,6 +19,7 @@ public class PlaceService {
     public PlaceService(PlaceRepository placeRepository) {
         this.placeRepository = placeRepository;
     }
+
     public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest) {
         ResponseModel<List<PlaceResponse>> responseModel = new ResponseModel<>();
         try {
