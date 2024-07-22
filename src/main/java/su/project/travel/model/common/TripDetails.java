@@ -6,6 +6,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class TripDetails {
-    Integer placeId;
-    String planDate;
+    private Integer placeId;
+    private String placeName;
+    private String placePhoto;
+    private String planDate;
 }

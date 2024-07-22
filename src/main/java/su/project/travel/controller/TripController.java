@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import su.project.travel.model.common.CurrentUser;
 import su.project.travel.model.request.CreateTripRequest;
+import su.project.travel.model.request.TripIdRequest;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
+import su.project.travel.model.response.TripResponse;
 import su.project.travel.service.TripService;
 
 import java.util.List;
@@ -32,5 +34,15 @@ public class TripController {
     public ResponseModel<List<InquiryTripResponse>> inquiryTrip(HttpServletRequest httpServletRequest) {
         CurrentUser currentUser = (CurrentUser) httpServletRequest.getAttribute("currentUser");
         return this.tripService.inquiryTrip(currentUser.getUserId());
+    }
+
+    @PostMapping("/delete")
+    public ResponseModel<Void> deleteTrip(@RequestBody TripIdRequest tripIdRequest) {
+        return this.tripService.deleteTrip(tripIdRequest);
+    }
+
+    @PostMapping("/details")
+    public ResponseModel<TripResponse> getTripDetails(@RequestBody TripIdRequest tripIdRequest) {
+        return this.tripService.getTripDetails(tripIdRequest);
     }
 }

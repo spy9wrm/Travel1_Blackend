@@ -10,5 +10,7 @@ import java.util.List;
 @Getter
 public class TripResponse {
     Integer tripId;
+    String tripName;
+    String createDate;
     List<TripDetails> placeList;
 }

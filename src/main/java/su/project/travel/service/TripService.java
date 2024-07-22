@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import su.project.travel.model.common.TripDetails;
 import su.project.travel.model.request.CreateTripRequest;
+import su.project.travel.model.request.TripIdRequest;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
+import su.project.travel.model.response.TripResponse;
 import su.project.travel.repository.TripRepository;
 
 import java.time.LocalDateTime;
@@ -53,6 +56,44 @@ public class TripService {
             responseModel.setMessage("ok");
             responseModel.setData(list);
         }catch (Exception e) {
+            responseModel.setCode(500);
+            responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+    public ResponseModel<Void> deleteTrip(TripIdRequest tripIdRequest) {
+        ResponseModel<Void> responseModel = new ResponseModel<>();
+        if(tripIdRequest.getTripId() == null) {
+            responseModel.setCode(400);
+            responseModel.setMessage("require tripId");
+            return responseModel;
+        }
+        try {
+            this.tripRepository.deleteTrip(tripIdRequest.getTripId());
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
+        }catch (Exception e) {
+            responseModel.setCode(500);
+            responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+    public ResponseModel<TripResponse> getTripDetails(TripIdRequest tripIdRequest) {
+        ResponseModel<TripResponse> responseModel = new ResponseModel<>();
+        if(tripIdRequest.getTripId() == null) {
+            responseModel.setCode(400);
+            responseModel.setMessage("require tripId");
+            return responseModel;
+        }
+        try{
+            TripResponse tripResponse = this.tripRepository.getTripDetails(tripIdRequest.getTripId()).getFirst();
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
+            responseModel.setData(tripResponse);
+        }catch (Exception e) {
+            log.error(e.getMessage(),e);
             responseModel.setCode(500);
             responseModel.setMessage(e.getMessage());
         }
