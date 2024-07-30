@@ -9,4 +9,5 @@ public interface AuthRepository {
     public CurrentUser login(String username, String password);
     public Integer insertTblUser(UserRegisterRequest userRequest);
     public void insertToUserFav(UserRegisterRequest userRequest);
+    public Integer checkusername(UserRegisterRequest userRegisterRequest) ;
 }

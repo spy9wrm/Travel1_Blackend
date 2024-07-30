@@ -15,4 +15,5 @@ public class UserRegisterRequest {
     private String name;
     private String sex;
     private List<String> typeFav;
+    private String occupation;
 }

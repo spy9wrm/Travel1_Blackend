@@ -18,7 +18,6 @@ import su.project.travel.utils.JwtUtils;
 public class AuthService {
     private final AuthRepository authRepository;
 
-
     public AuthService(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
@@ -57,6 +56,12 @@ public class AuthService {
     @Transactional
     public ResponseModel<Void> userRegister(UserRegisterRequest request) {
         ResponseModel<Void> responseModel = new ResponseModel<>();
+        Integer count = this.authRepository.checkusername(request);
+        if(count > 0){
+            responseModel.setCode(409);
+            responseModel.setMessage("มีีusernameนี้อยู่แล้ว");
+            return responseModel;
+        }
         try {
             Integer userId = this.authRepository.insertTblUser(request);
             request.setUserId(userId);

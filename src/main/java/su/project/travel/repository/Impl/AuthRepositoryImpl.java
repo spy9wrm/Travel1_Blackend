@@ -11,6 +11,9 @@ import su.project.travel.model.common.UserIdModel;
 import su.project.travel.model.request.UserRegisterRequest;
 import su.project.travel.repository.AuthRepository;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -44,17 +47,29 @@ public class AuthRepositoryImpl implements AuthRepository {
         return null; // Return null if no user is found
     }
 
+    public Integer checkusername(UserRegisterRequest userRegisterRequest) {
+        String sql = "SELECT count(0) FROM tb_users WHERE username = ? AND is_deleted = 'N';";
+        List<Object> params = new ArrayList<>();
+        params.add(userRegisterRequest.getUsername());
+
+        // Use jdbcTemplate to query the count from the database
+        return jdbcTemplate.queryForObject(sql, params.toArray(), Integer.class);
+    }
     public Integer insertTblUser(UserRegisterRequest userRequest) {
-        String sql = "INSERT INTO tb_users (name, birthday, username, password, sex) " +
-                "VALUES (:name, :birthday, :username, :password, :sex)";
+        String sql = "INSERT INTO tb_users (name, birthday, username, password, sex, occupation) " +
+                "VALUES (:name, :birthday, :username, :password, :sex, :occupation)";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date = LocalDate.parse(userRequest.getBirthday(), formatter);
 
         // Create a MapSqlParameterSource to hold named parameters and their values
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("name", userRequest.getName())
-                .addValue("birthday", userRequest.getBirthday())
+                .addValue("birthday", date)
                 .addValue("username", userRequest.getUsername())
                 .addValue("password", userRequest.getPassword())
-                .addValue("sex", userRequest.getSex());
+                .addValue("sex", userRequest.getSex())
+                .addValue("occupation", userRequest.getOccupation());
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
