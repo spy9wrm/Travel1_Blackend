@@ -49,42 +49,25 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         String province = placeRequest.getProvince();
         String type = placeRequest.getType();
         String groups = placeRequest.getTouristType();
-
-        if(StringUtils.isNotEmpty(name)){
-            System.out.println(province);
-            sql += "WHERE pl.name LIKE ? AND pr.province_name_th LIKE ";
+sql+= " WHERE 1=1 ";
+        if (StringUtils.isNotEmpty(placeRequest.getSearch())) {
+            sql += "AND pl.name LIKE ?";
             params.add("%" + name + "%");
-            params.add("%" + province + "%");
-//            if(StringUtils.isNotEmpty(placeRequest.getProvince())){
-//                sql += "AND pr.province_name_th LIKE ?";
-//                params.add("%" + province + "%");
-//            }
-//            if(StringUtils.isNotEmpty(type)){
-//                sql += "AND ? = ANY(pl.type)";
-//                params.add(type);
-//            }
-//            if(StringUtils.isNotEmpty(groups)){
-//                sql += "AND ? = ANY(pl.tourist_type)";
-//                params.add(groups);
-//            }
-        }
-//        else if(StringUtils.isNotEmpty(province)){
-//            sql += "WHERE province.name LIKE ?";
-//            if(StringUtils.isNotEmpty(type)){
-//                sql += "AND type LIKE ?";
-//            }
-//            if(StringUtils.isNotEmpty(touristType)){
-//                sql += "AND family LIKE ?";
-//            }
-//        } else if (StringUtils.isNotEmpty(type)) {
-//            sql += "WHERE type LIKE ?";
-//            if(StringUtils.isNotEmpty(touristType)){
-//                sql += "AND family LIKE ?";
-//            }
-//        }else if(StringUtils.isNotEmpty(touristType)){
-//            sql += "WHERE family LIKE ?";
-//        }
 
+        }
+        if (StringUtils.isNotEmpty(placeRequest.getProvince())) {
+            sql += " AND pr.province_name_th LIKE ? ";
+            params.add("%" + province + "%");
+        }
+
+        if(StringUtils.isNotEmpty(placeRequest.getTouristType())){
+            sql += " AND ? = ANY(pl.tourist_type) ";
+            params.add(placeRequest.getTouristType());
+        }
+        if(StringUtils.isNotEmpty(placeRequest.getType())){
+            sql += " AND ? = ANY(pl.type) ";
+            params.add(placeRequest.getType());
+        }
         sql += " ORDER BY pl.place_id ";
 
 
@@ -92,7 +75,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         params.add(placeRequest.getPage() * placeRequest.getSize());
         params.add(placeRequest.getSize());
 
-        return jdbcTemplate.query(sql, params.toArray(),new RowMapper<PlaceResponse>() {
+        return jdbcTemplate.query(sql, params.toArray(), new RowMapper<PlaceResponse>() {
             @Override
             public PlaceResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PlaceResponse place = new PlaceResponse();
@@ -134,7 +117,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
     }
 
     public List<PlaceResponse> getPlaceDetails(PlaceDetailsRequest placeDetailsRequest) {
-         String sql = """
+        String sql = """
                 SELECT place_id, name, description, type, photo, tourist_type,
                        maximum_attendee, has_map, latitude, longitude,
                        telephone, email, street_address, city,
@@ -146,7 +129,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         List<Object> params = new ArrayList<>();
         params.add(placeDetailsRequest.getPlaceId());
-        List<PlaceResponse> placeResponses =  jdbcTemplate.query(sql, params.toArray(),new RowMapper<PlaceResponse>() {
+        List<PlaceResponse> placeResponses = jdbcTemplate.query(sql, params.toArray(), new RowMapper<PlaceResponse>() {
             @Override
             public PlaceResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PlaceResponse place = new PlaceResponse();
@@ -186,13 +169,13 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             }
         });
         sql = """
-            select place_id, td.name_th as day_of_week, opens, closes
-            from tb_day td
-                     left join (select place_id,day_of_week, opens, closes from tb_place_opening_hours where place_id = ?) ph
-                               on ph.day_of_week = td.day_id
-            order by td.day_id;
-        """;
-        List<PlaceOpeningHours> placeOpeningHours =  jdbcTemplate.query(sql, params.toArray(),new RowMapper<PlaceOpeningHours>() {
+                    select place_id, td.name_th as day_of_week, opens, closes
+                    from tb_day td
+                             left join (select place_id,day_of_week, opens, closes from tb_place_opening_hours where place_id = ?) ph
+                                       on ph.day_of_week = td.day_id
+                    order by td.day_id;
+                """;
+        List<PlaceOpeningHours> placeOpeningHours = jdbcTemplate.query(sql, params.toArray(), new RowMapper<PlaceOpeningHours>() {
             @Override
             public PlaceOpeningHours mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PlaceOpeningHours place = new PlaceOpeningHours();
@@ -208,10 +191,6 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         return placeResponses;
     }
-
-
-
-
 
 
 }
