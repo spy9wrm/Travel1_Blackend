@@ -9,4 +9,7 @@ public class PlaceRequest {
     private String search;
     private int size = 10;
     private int page = 0;
+    private String province;
+    private String type;
+    private String touristType;
 }

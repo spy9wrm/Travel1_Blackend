@@ -45,10 +45,46 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         List<Object> params = new ArrayList<>();
 
-        if (StringUtils.isNotEmpty(placeRequest.getSearch())) {
-            sql += " WHERE pl.name LIKE ? ";
-            params.add("%" + placeRequest.getSearch() + "%");
+        String name = placeRequest.getSearch();
+        String province = placeRequest.getProvince();
+        String type = placeRequest.getType();
+        String groups = placeRequest.getTouristType();
+
+        if(StringUtils.isNotEmpty(name)){
+            System.out.println(province);
+            sql += "WHERE pl.name LIKE ? AND pr.province_name_th LIKE ";
+            params.add("%" + name + "%");
+            params.add("%" + province + "%");
+//            if(StringUtils.isNotEmpty(placeRequest.getProvince())){
+//                sql += "AND pr.province_name_th LIKE ?";
+//                params.add("%" + province + "%");
+//            }
+//            if(StringUtils.isNotEmpty(type)){
+//                sql += "AND ? = ANY(pl.type)";
+//                params.add(type);
+//            }
+//            if(StringUtils.isNotEmpty(groups)){
+//                sql += "AND ? = ANY(pl.tourist_type)";
+//                params.add(groups);
+//            }
         }
+//        else if(StringUtils.isNotEmpty(province)){
+//            sql += "WHERE province.name LIKE ?";
+//            if(StringUtils.isNotEmpty(type)){
+//                sql += "AND type LIKE ?";
+//            }
+//            if(StringUtils.isNotEmpty(touristType)){
+//                sql += "AND family LIKE ?";
+//            }
+//        } else if (StringUtils.isNotEmpty(type)) {
+//            sql += "WHERE type LIKE ?";
+//            if(StringUtils.isNotEmpty(touristType)){
+//                sql += "AND family LIKE ?";
+//            }
+//        }else if(StringUtils.isNotEmpty(touristType)){
+//            sql += "WHERE family LIKE ?";
+//        }
+
         sql += " ORDER BY pl.place_id ";
 
 
