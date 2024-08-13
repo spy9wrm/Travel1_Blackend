@@ -9,7 +9,9 @@ import su.project.travel.model.request.TripIdRequest;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.model.response.TripResponse;
+import su.project.travel.model.tourism.Tourism;
 import su.project.travel.service.TripService;
+import su.project.travel.service.UpdateDbService;
 
 import java.util.List;
 
@@ -45,4 +47,6 @@ public class TripController {
     public ResponseModel<TripResponse> getTripDetails(@RequestBody TripIdRequest tripIdRequest) {
         return this.tripService.getTripDetails(tripIdRequest);
     }
+
+
 }

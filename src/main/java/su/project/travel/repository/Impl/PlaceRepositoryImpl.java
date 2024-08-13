@@ -131,7 +131,7 @@ sql+= " WHERE 1=1 ";
         params.add(placeDetailsRequest.getPlaceId());
         List<PlaceResponse> placeResponses = jdbcTemplate.query(sql, params.toArray(), new RowMapper<PlaceResponse>() {
             @Override
-            public PlaceResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
+             public PlaceResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PlaceResponse place = new PlaceResponse();
                 place.setPlaceId(rs.getInt("place_id"));
                 place.setName(rs.getString("name"));

@@ -119,7 +119,9 @@ public class UserTripRepositoryImpl implements TripRepository {
                 td.place_id,
                 td.plan_date,
                 tp.name,
-                tp.photo[1] AS photo
+                tp.photo[1] AS photo,
+                tp.longitude,
+                tp.latitude
             FROM
                 tb_trip_detail td
                 INNER JOIN tb_place tp ON tp.place_id = td.place_id
@@ -138,6 +140,7 @@ public class UserTripRepositoryImpl implements TripRepository {
                 tripResponse.setTripId(rs.getInt("trip_id"));
                 tripResponse.setTripName(rs.getString("trip_name"));
                 tripResponse.setCreateDate(rs.getString("create_date"));
+
                 return tripResponse;
             }
         });
