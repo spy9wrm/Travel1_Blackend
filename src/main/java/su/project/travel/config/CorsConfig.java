@@ -12,7 +12,7 @@ import java.util.List;
 @Configuration
 public class CorsConfig implements CorsConfigurationSource {
 
-    private static final List<String> ALLOWED_ORIGINS = List.of("http://localhost:4200");
+    private static final List<String> ALLOWED_ORIGINS = List.of("*");
     private static final List<String> ALLOWED_HEADERS = List.of("Authorization", "Content-Type");
     private static final List<String> ALLOWED_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS");
 
@@ -20,7 +20,7 @@ public class CorsConfig implements CorsConfigurationSource {
     @Override
     public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ALLOWED_ORIGINS);
+        configuration.setAllowedOriginPatterns(ALLOWED_HEADERS);
         configuration.setAllowedHeaders(ALLOWED_HEADERS);
         configuration.setAllowedMethods(ALLOWED_METHODS);
         configuration.setAllowCredentials(true);

@@ -13,5 +13,4 @@ public class TripResponse {
     String tripName;
     String createDate;
     List<TripDetails> placeList;
-
 }

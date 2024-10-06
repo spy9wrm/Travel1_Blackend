@@ -10,4 +10,9 @@ public class TripDetails {
     private String placeName;
     private String placePhoto;
     private String planDate;
+    private double longitude;
+    private double latitude;
+    private Integer userRating;
+    private Integer tripDetailId;
+
 }

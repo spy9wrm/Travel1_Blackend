@@ -1,15 +1,24 @@
 package su.project.travel.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.model.tourism.Tourism;
+import su.project.travel.repository.UpdateDbRepository;
 
 import java.io.File;
 import java.io.IOException;
 
 @Service
 public class UpdateDbService {
+    private UpdateDbRepository updateDbRepository;
+
+    public UpdateDbService(UpdateDbRepository updateDbRepository) {
+        this.updateDbRepository = updateDbRepository;
+    }
+
+    @Transactional
     public ResponseModel<Tourism> readFile(String filePath) {
         ResponseModel<Tourism> responseModel = new ResponseModel<>();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -17,7 +26,8 @@ public class UpdateDbService {
             Tourism tourism = objectMapper.readValue(new File(filePath), Tourism.class);
             responseModel.setCode(200);
             responseModel.setMessage("File read successfully");
-
+            responseModel.setData(tourism);
+            updateDbRepository.UpdateDb(tourism);
         } catch (Exception e) {
             e.printStackTrace();
             responseModel.setCode(500);

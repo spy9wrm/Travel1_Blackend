@@ -1,5 +1,6 @@
 package su.project.travel.repository;
 
+import su.project.travel.model.common.TripDetails;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.TripResponse;
 
@@ -12,5 +13,8 @@ public interface TripRepository {
     public List<InquiryTripResponse> inquiryTripResponseList(Integer userId);
     public void deleteTrip(Integer tripId);
     public List<TripResponse> getTripDetails(Integer tripId);
+    public void updateTbTrip(Integer userId,String tripName,Integer tripId);
+    public void updateTbTripDetails(Integer tripId,List<TripDetails> tripDetailsList);
+
 
 }

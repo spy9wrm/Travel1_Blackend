@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import su.project.travel.model.common.TripDetails;
 import su.project.travel.model.request.CreateTripRequest;
 import su.project.travel.model.request.TripIdRequest;
+import su.project.travel.model.request.UpdateTripRequest;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.model.response.TripResponse;
@@ -42,6 +43,22 @@ public class TripService {
             responseModel.setCode(200);
             responseModel.setMessage("ok");
         } catch (Exception e) {
+            responseModel.setCode(500);
+            responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+
+    public ResponseModel<Void> updateTrip(UpdateTripRequest updateTripRequest, Integer userId){
+        ResponseModel<Void> responseModel = new ResponseModel<>();
+        try{
+            this.tripRepository.updateTbTrip(userId,updateTripRequest.getTripName(),updateTripRequest.getTripId());
+            this.tripRepository.updateTbTripDetails(updateTripRequest.getTripId(),updateTripRequest.getTripDetailsList());
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
+        }catch(Exception e){
+            e.printStackTrace();
             responseModel.setCode(500);
             responseModel.setMessage(e.getMessage());
         }

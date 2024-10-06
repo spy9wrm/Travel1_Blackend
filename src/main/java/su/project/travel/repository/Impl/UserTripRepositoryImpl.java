@@ -1,5 +1,7 @@
 package su.project.travel.repository.Impl;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository("TripRepo")
 public class UserTripRepositoryImpl implements TripRepository {
@@ -59,6 +62,71 @@ public class UserTripRepositoryImpl implements TripRepository {
         mapSqlParameterSource.addValue("plan_date",planDate);
 
         namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+    }
+
+    public void updateTbTrip(Integer userId,String tripName,Integer tripId) {
+        String sql = """
+                UPDATE tb_trip SET trip_name = :trip_name WHERE trip_id = :trip_id AND user_id = :user_id;
+                """;
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("user_id", userId);
+        mapSqlParameterSource.addValue("trip_name", tripName);
+        mapSqlParameterSource.addValue("trip_id", tripId);
+        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+
+    }
+
+    public void updateTbTripDetails(Integer tripId,List<TripDetails> tripDetailsList) {
+        List<Integer> getTripDetailIds = new ArrayList<>();
+        for (TripDetails tripDetails : tripDetailsList) {
+            if(ObjectUtils.isNotEmpty(tripDetails.getTripDetailId())){
+                getTripDetailIds.add(tripDetails.getTripDetailId());
+            }
+        }
+
+        String sql = """
+                DELETE FROM tb_trip_detail WHERE trip_id = :trip_id AND trip_detail_id NOT IN(:trip_detail_id);
+                """;
+
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("trip_id", tripId);
+        mapSqlParameterSource.addValue("trip_detail_id", getTripDetailIds);
+        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+        for(TripDetails tripDetails : tripDetailsList) {
+            if(ObjectUtils.isEmpty(tripDetails.getTripDetailId())) {
+
+                String planDateString = tripDetails.getPlanDate();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime planDate = LocalDateTime.parse(planDateString, formatter);
+
+               String sql2 =
+                       """
+                    INSERT INTO tb_trip_detail (trip_id,place_id,plan_date) values (:trip_id, :place_id, :plan_date)
+                    """;
+                MapSqlParameterSource mapSqlParameterSource2 = new MapSqlParameterSource();
+                mapSqlParameterSource2.addValue("trip_id", tripId);
+                mapSqlParameterSource2.addValue("plan_date",planDate);
+                mapSqlParameterSource2.addValue("place_id",tripDetails.getPlaceId());
+
+                namedParameterJdbcTemplate.update(sql2, mapSqlParameterSource2);
+            }else{
+
+                String planDateString = tripDetails.getPlanDate();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime planDate = LocalDateTime.parse(planDateString, formatter);
+
+                String sql2 =
+                        """
+                     UPDATE tb_trip_detail SET plan_date = :plan_date WHERE trip_detail_id = :trip_detail_id;
+                     """;
+
+                MapSqlParameterSource mapSqlParameterSource2 = new MapSqlParameterSource();
+                mapSqlParameterSource2.addValue("plan_date",planDate);
+                mapSqlParameterSource2.addValue("trip_detail_id",tripDetails.getTripDetailId());
+                namedParameterJdbcTemplate.update(sql2, mapSqlParameterSource2);
+            }
+        }
+
     }
 
     public List<InquiryTripResponse> inquiryTripResponseList(Integer userId) {
@@ -116,6 +184,7 @@ public class UserTripRepositoryImpl implements TripRepository {
 
         String tripDetailSql = """
             SELECT
+                td.trip_detail_id,
                 td.place_id,
                 td.plan_date,
                 tp.name,
@@ -153,9 +222,12 @@ public class UserTripRepositoryImpl implements TripRepository {
                 details.setPlaceId(rs.getInt("place_id"));
                 details.setPlaceName(rs.getString("name"));
                 details.setPlacePhoto(rs.getString("photo"));
+                details.setLongitude(rs.getDouble("longitude"));  // ดึง latitude
+                details.setLatitude(rs.getDouble("latitude"));    // ดึง longitudedetails.setLongitude(rs.getDouble("longitude"));  // ดึง latitude
                 Timestamp planDate = rs.getTimestamp("plan_date");
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 details.setPlanDate(planDate.toLocalDateTime().format(formatter));
+                details.setTripDetailId(rs.getInt("trip_detail_id"));
                 return details;
             }
         });
