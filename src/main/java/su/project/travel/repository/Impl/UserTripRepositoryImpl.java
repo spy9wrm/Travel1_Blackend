@@ -91,7 +91,9 @@ public class UserTripRepositoryImpl implements TripRepository {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("trip_id", tripId);
         mapSqlParameterSource.addValue("trip_detail_id", getTripDetailIds);
-        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+        if(!getTripDetailIds.isEmpty()){
+            namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+        }
         for(TripDetails tripDetails : tripDetailsList) {
             if(ObjectUtils.isEmpty(tripDetails.getTripDetailId())) {
 
