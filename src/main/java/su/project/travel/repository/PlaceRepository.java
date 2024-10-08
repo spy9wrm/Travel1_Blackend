@@ -4,12 +4,13 @@ import su.project.travel.model.request.PlaceDetailsRequest;
 import su.project.travel.model.request.PlaceRequest;
 import su.project.travel.model.request.UserRegisterRequest;
 import su.project.travel.model.response.PlaceResponse;
+import su.project.travel.model.response.PredictResponse;
 import su.project.travel.model.response.UserResponse;
 
 import java.util.List;
 
 public interface PlaceRepository {
-    public List<PlaceResponse> getPlace(PlaceRequest placeRequest);
+    public List<PlaceResponse> getPlace(PlaceRequest placeRequest,List<PredictResponse> predictResponseList);
 
     public List<PlaceResponse> getPlaceDetails(PlaceDetailsRequest placeDetailsRequest);
 

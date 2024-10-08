@@ -13,6 +13,7 @@ import su.project.travel.model.request.PlaceRequest;
 import su.project.travel.model.request.UserRegisterRequest;
 import su.project.travel.model.response.PlaceOpeningHours;
 import su.project.travel.model.response.PlaceResponse;
+import su.project.travel.model.response.PredictResponse;
 import su.project.travel.repository.PlaceRepository;
 
 import java.sql.Array;
@@ -27,55 +28,68 @@ import java.util.stream.Collectors;
 @Repository
 public class PlaceRepositoryImpl implements PlaceRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public PlaceRepositoryImpl(JdbcTemplate jdbcTemplate) {
+    public PlaceRepositoryImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
-    public List<PlaceResponse> getPlace(PlaceRequest placeRequest) {
+    public List<PlaceResponse> getPlace(PlaceRequest placeRequest, List<PredictResponse> predictResponseList) {
         String sql = """
-                SELECT place_id, name, description, type, photo, tourist_type,
-                       maximum_attendee, has_map, latitude, longitude,
-                       telephone, email, street_address, city,
-                       city_sub_division, country, pr.province_name_th as country_sub_division,
-                       post_code FROM tb_place pl
-                    LEFT JOIN tb_province pr ON pl.country_sub_division = pr.province_id
-                """;
+            SELECT place_id, name, description, type, photo, tourist_type,
+                   maximum_attendee, has_map, latitude, longitude,
+                   telephone, email, street_address, city,
+                   city_sub_division, country, pr.province_name_th as country_sub_division,
+                   post_code FROM tb_place pl
+                LEFT JOIN tb_province pr ON pl.country_sub_division = pr.province_id
+            WHERE 1=1
+            """;
 
-        List<Object> params = new ArrayList<>();
+        MapSqlParameterSource params = new MapSqlParameterSource();
 
         String name = placeRequest.getSearch();
         String province = placeRequest.getProvince();
         String type = placeRequest.getType();
         String groups = placeRequest.getTouristType();
-sql+= " WHERE 1=1 ";
-        if (StringUtils.isNotEmpty(placeRequest.getSearch())) {
-            sql += "AND pl.name LIKE ?";
-            params.add("%" + name + "%");
 
-        }
-        if (StringUtils.isNotEmpty(placeRequest.getProvince())) {
-            sql += " AND pr.province_name_th LIKE ? ";
-            params.add("%" + province + "%");
+        if (!predictResponseList.isEmpty()) {
+            List<String> predictNames = predictResponseList.stream()
+                    .map(PredictResponse::getPlaceName)  // Assuming PlaceResponse has a getName() method
+                    .collect(Collectors.toList());
+
+            sql += " AND pl.name IN (:predict)";
+            params.addValue("predict", predictNames);
         }
 
-        if(StringUtils.isNotEmpty(placeRequest.getTouristType())){
-            sql += " AND ? = ANY(pl.tourist_type) ";
-            params.add(placeRequest.getTouristType());
+
+        if (StringUtils.isNotEmpty(name)) {
+            sql += " AND pl.name LIKE :name ";
+            params.addValue("name", "%" + name + "%");
         }
-        if(StringUtils.isNotEmpty(placeRequest.getType())){
-            sql += " AND ? = ANY(pl.type) ";
-            params.add(placeRequest.getType());
+
+        if (StringUtils.isNotEmpty(province)) {
+            sql += " AND pr.province_name_th LIKE :province ";
+            params.addValue("province", "%" + province + "%");
         }
+
+        if (StringUtils.isNotEmpty(groups)) {
+            sql += " AND :touristType = ANY(pl.tourist_type) ";
+            params.addValue("touristType", groups);
+        }
+
+        if (StringUtils.isNotEmpty(type)) {
+            sql += " AND :type = ANY(pl.type) ";
+            params.addValue("type", type);
+        }
+
         sql += " ORDER BY pl.place_id ";
+        sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
+        params.addValue("offset", placeRequest.getPage() * placeRequest.getSize());
+        params.addValue("limit", placeRequest.getSize());
 
-
-        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ";
-        params.add(placeRequest.getPage() * placeRequest.getSize());
-        params.add(placeRequest.getSize());
-
-        return jdbcTemplate.query(sql, params.toArray(), new RowMapper<PlaceResponse>() {
+        return namedParameterJdbcTemplate.query(sql, params, new RowMapper<PlaceResponse>() {
             @Override
             public PlaceResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PlaceResponse place = new PlaceResponse();
@@ -115,6 +129,7 @@ sql+= " WHERE 1=1 ";
             }
         });
     }
+
 
     public List<PlaceResponse> getPlaceDetails(PlaceDetailsRequest placeDetailsRequest) {
         String sql = """
