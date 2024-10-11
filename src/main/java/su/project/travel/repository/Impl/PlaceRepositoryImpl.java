@@ -59,8 +59,8 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                     .map(PredictResponse::getPlaceName)  // Assuming PlaceResponse has a getName() method
                     .collect(Collectors.toList());
 
-            sql += " AND pl.name IN (:predict)";
-            params.addValue("predict", predictNames);
+//            sql += " AND pl.name IN (:predict)";
+//            params.addValue("predict", predictNames);
         }
 
 
