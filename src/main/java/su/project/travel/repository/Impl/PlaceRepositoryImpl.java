@@ -54,15 +54,16 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         String type = placeRequest.getType();
         String groups = placeRequest.getTouristType();
 
-        if (!predictResponseList.isEmpty()) {
-            List<String> predictNames = predictResponseList.stream()
-                    .map(PredictResponse::getPlaceName)  // Assuming PlaceResponse has a getName() method
-                    .collect(Collectors.toList());
+        if(StringUtils.isEmpty(name) && StringUtils.isEmpty(province) && StringUtils.isEmpty(type) && StringUtils.isEmpty(groups)) {
+            if (!predictResponseList.isEmpty()) {
+                List<String> predictNames = predictResponseList.stream()
+                        .map(PredictResponse::getPlaceName)  // Assuming PlaceResponse has a getName() method
+                        .collect(Collectors.toList());
 
-//            sql += " AND pl.name IN (:predict)";
-//            params.addValue("predict", predictNames);
+                sql += " AND pl.name IN (:predict)";
+                params.addValue("predict", predictNames);
+            }
         }
-
 
         if (StringUtils.isNotEmpty(name)) {
             sql += " AND pl.name LIKE :name ";

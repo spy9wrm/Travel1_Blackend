@@ -15,6 +15,7 @@ import su.project.travel.model.response.PredictResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.PlaceRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 @Slf4j
 @Service
@@ -33,11 +34,19 @@ public class PlaceService {
         try {
             UserIdRequest userIdRequest = new UserIdRequest();
             userIdRequest.setUserId(userid);
-            String predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
-            log.info(predict);
+            String predict = "";
+            List<PredictResponse> predictResponse = new ArrayList<>();
+            if(StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
 
-            List<PredictResponse> predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {});
-            log.info(predictResponse.getFirst().getPlaceName());
+
+                predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
+
+                log.info(predict);
+
+                predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {});
+                log.info(predictResponse.getFirst().getPlaceName());
+            }
+
 
             List<PlaceResponse> placeResponses = this.placeRepository.getPlace(placeRequest,predictResponse);
             responseModel.setCode(200);
