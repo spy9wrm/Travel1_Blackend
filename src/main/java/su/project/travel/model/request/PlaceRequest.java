@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 public class PlaceRequest {
     private String search;
-    private int size = 10;
+    private int size = 8;
     private int page = 0;
     private String province;
     private String type;

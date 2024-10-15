@@ -51,7 +51,6 @@ public class PlaceService {
 
                     predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
 
-                    // เก็บค่าผลลัพธ์ในแคช
                     tranModelCachingUtils.cache.put(userid, predict);
                 }
 
