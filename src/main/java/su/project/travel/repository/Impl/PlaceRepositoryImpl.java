@@ -35,6 +35,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
+
     @Override
     public List<PlaceResponse> getPlace(PlaceRequest placeRequest, List<PredictResponse> predictResponseList) {
         String sql = """

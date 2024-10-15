@@ -29,6 +29,7 @@ public class TripController {
         this.tripService = tripService;
     }
 
+
     @PostMapping("/create")
     public ResponseModel<Void> createTrip(@RequestBody CreateTripRequest request, HttpServletRequest httpServletRequest) {
         CurrentUser currentUser = (CurrentUser) httpServletRequest.getAttribute("currentUser");
