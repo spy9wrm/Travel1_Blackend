@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import su.project.travel.model.common.CurrentUser;
 import su.project.travel.model.common.TripDetails;
 import su.project.travel.model.request.CreateTripRequest;
 import su.project.travel.model.request.TripIdRequest;
@@ -13,7 +14,9 @@ import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.model.response.TripResponse;
 import su.project.travel.repository.TripRepository;
+import su.project.travel.utils.TranModelCachingUtils;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,9 +26,12 @@ import java.util.List;
 public class TripService {
     private final TripRepository tripRepository;
 
+    private final TranModelCachingUtils tranModelCachingUtils;
+
     @Autowired
-    public TripService(@Qualifier("TripRepo") TripRepository tripRepository) {
+    public TripService(@Qualifier("TripRepo") TripRepository tripRepository, TranModelCachingUtils tranModelCachingUtils) {
         this.tripRepository = tripRepository;
+        this.tranModelCachingUtils = tranModelCachingUtils;
     }
 
     @Transactional
@@ -97,6 +103,7 @@ public class TripService {
         return responseModel;
     }
 
+
     public ResponseModel<TripResponse> getTripDetails(TripIdRequest tripIdRequest) {
         ResponseModel<TripResponse> responseModel = new ResponseModel<>();
         if(tripIdRequest.getTripId() == null) {
@@ -106,9 +113,26 @@ public class TripService {
         }
         try{
             TripResponse tripResponse = this.tripRepository.getTripDetails(tripIdRequest.getTripId()).getFirst();
+
             responseModel.setCode(200);
             responseModel.setMessage("ok");
             responseModel.setData(tripResponse);
+        }catch (Exception e) {
+            log.error(e.getMessage(),e);
+            responseModel.setCode(500);
+            responseModel.setMessage(e.getMessage());
+        }
+        return responseModel;
+    }
+
+    public ResponseModel<Void> updateUserRating(List<TripDetails> tripDetails, CurrentUser currentUser) {
+        ResponseModel<Void> responseModel = new ResponseModel<>();
+
+        try{
+            this.tranModelCachingUtils.cache.remove(currentUser.getUserId());
+            this.tripRepository.updateUserRating(tripDetails);
+            responseModel.setCode(200);
+            responseModel.setMessage("ok");
         }catch (Exception e) {
             log.error(e.getMessage(),e);
             responseModel.setCode(500);

@@ -10,4 +10,5 @@ public class InquiryTripResponse {
     private String tripName;
     private String photo;
     private String createDate;
+    private String isFinish;
 }

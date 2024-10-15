@@ -15,6 +15,6 @@ public interface TripRepository {
     public List<TripResponse> getTripDetails(Integer tripId);
     public void updateTbTrip(Integer userId,String tripName,Integer tripId);
     public void updateTbTripDetails(Integer tripId,List<TripDetails> tripDetailsList);
-
+    public void updateUserRating( List<TripDetails> tripDetails);
 
 }

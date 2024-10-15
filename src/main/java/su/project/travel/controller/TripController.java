@@ -4,9 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import su.project.travel.model.common.CurrentUser;
+import su.project.travel.model.common.TripDetails;
 import su.project.travel.model.request.CreateTripRequest;
 import su.project.travel.model.request.TripIdRequest;
 import su.project.travel.model.request.UpdateTripRequest;
+import su.project.travel.model.request.UserRatingRequest;
 import su.project.travel.model.response.InquiryTripResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.model.response.TripResponse;
@@ -52,5 +54,11 @@ public class TripController {
     public ResponseModel<Void> updateTrip(@RequestBody UpdateTripRequest updateTripRequest, HttpServletRequest httpServletRequest) {
         CurrentUser currentUser = (CurrentUser) httpServletRequest.getAttribute("currentUser");
     return this.tripService.updateTrip(updateTripRequest,currentUser.getUserId());
+    }
+
+    @PostMapping("/ratings")
+    public ResponseModel<Void> updateTripRatings(@RequestBody List<TripDetails> tripDetails,HttpServletRequest httpServletRequest) {
+        CurrentUser currentUser = (CurrentUser) httpServletRequest.getAttribute("currentUser");
+        return this.tripService.updateUserRating(tripDetails,currentUser);
     }
 }

@@ -14,21 +14,25 @@ import su.project.travel.model.response.PlaceResponse;
 import su.project.travel.model.response.PredictResponse;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.PlaceRepository;
+import su.project.travel.utils.TranModelCachingUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Slf4j
 @Service
 public class PlaceService {
     private final PlaceRepository placeRepository;
     private final PredictAdapter predictAdapter;
+    private final TranModelCachingUtils tranModelCachingUtils;
 
-    public PlaceService(PlaceRepository placeRepository, PredictAdapter predictAdapter) {
+    public PlaceService(PlaceRepository placeRepository, PredictAdapter predictAdapter, TranModelCachingUtils tranModelCachingUtils) {
         this.placeRepository = placeRepository;
         this.predictAdapter = predictAdapter;
+        this.tranModelCachingUtils = tranModelCachingUtils;
     }
 
-    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest,Integer userid) {
+    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest, Integer userid) {
         ResponseModel<List<PlaceResponse>> responseModel = new ResponseModel<>();
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -36,33 +40,45 @@ public class PlaceService {
             userIdRequest.setUserId(userid);
             String predict = "";
             List<PredictResponse> predictResponse = new ArrayList<>();
-            if(StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
+
+            if (StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
 
 
-                predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
+                if (tranModelCachingUtils.cache.containsKey(userid)) {
+
+                    predict = tranModelCachingUtils.cache.get(userid);
+                } else {
+
+                    predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
+
+                    // เก็บค่าผลลัพธ์ในแคช
+                    tranModelCachingUtils.cache.put(userid, predict);
+                }
 
                 log.info(predict);
 
-                predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {});
+                predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {
+                });
                 log.info(predictResponse.getFirst().getPlaceName());
             }
 
 
-            List<PlaceResponse> placeResponses = this.placeRepository.getPlace(placeRequest,predictResponse);
+            List<PlaceResponse> placeResponses = this.placeRepository.getPlace(placeRequest, predictResponse);
             responseModel.setCode(200);
             responseModel.setMessage("ok");
             responseModel.setData(placeResponses);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             responseModel.setCode(500);
             responseModel.setMessage("server error");
         }
         return responseModel;
     }
+
     public ResponseModel<PlaceResponse> getPlaceDetails(PlaceDetailsRequest placeRequest) {
         ResponseModel<PlaceResponse> responseModel = new ResponseModel<>();
-        if(ObjectUtils.isEmpty(placeRequest.getPlaceId())) {
+        if (ObjectUtils.isEmpty(placeRequest.getPlaceId())) {
             responseModel.setCode(400);
             responseModel.setMessage("placeId is null");
             return responseModel;
@@ -73,9 +89,9 @@ public class PlaceService {
             responseModel.setCode(200);
             responseModel.setMessage("ok");
             responseModel.setData(placeResponses.getFirst());
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             responseModel.setCode(500);
             responseModel.setMessage("server error");
         }

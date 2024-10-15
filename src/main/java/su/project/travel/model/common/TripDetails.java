@@ -14,5 +14,4 @@ public class TripDetails {
     private double latitude;
     private Integer userRating;
     private Integer tripDetailId;
-
 }

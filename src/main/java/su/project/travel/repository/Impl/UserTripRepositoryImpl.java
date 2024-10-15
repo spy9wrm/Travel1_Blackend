@@ -136,7 +136,11 @@ public class UserTripRepositoryImpl implements TripRepository {
                 select tt.trip_id,
                        trip_name,
                        (array_agg(tp.photo))[1] as photo,
-                       tt.create_date
+                       tt.create_date,
+                        CASE
+                        WHEN CURRENT_DATE > MAX(td.plan_date) THEN 'Y'
+                            ELSE 'N'
+                        END AS is_finish
                 from tb_trip tt
                          inner join tb_trip_detail td on td.trip_id = tt.trip_id
                          inner join (select place_id, unnest(photo) as photo
@@ -157,6 +161,7 @@ public class UserTripRepositoryImpl implements TripRepository {
                 response.setTripName(rs.getString("trip_name"));
                 response.setPhoto(rs.getString("photo"));
                 response.setCreateDate(rs.getString("create_date"));
+                response.setIsFinish(rs.getString("is_finish"));
                 return response;
             }
         });
@@ -237,4 +242,19 @@ public class UserTripRepositoryImpl implements TripRepository {
         tripResponse.setPlaceList(tripDetails);
         return List.of(tripResponse);
     }
+
+    public void updateUserRating(List<TripDetails> tripDetails) {
+
+        String sql = """
+                UPDATE tb_trip_detail SET user_rating = :user_rating WHERE trip_detail_id = :trip_detail_id;
+                """;
+        for(int i =0;i<tripDetails.size();i++) {
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+            mapSqlParameterSource.addValue("user_rating", tripDetails.get(i).getUserRating());
+            mapSqlParameterSource.addValue("trip_detail_id", tripDetails.get(i).getTripDetailId());
+            namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+        }
+
+    }
+
 }
