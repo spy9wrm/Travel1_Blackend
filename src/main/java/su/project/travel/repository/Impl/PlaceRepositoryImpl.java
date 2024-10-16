@@ -49,7 +49,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-
+        String x = "";
         String name = placeRequest.getSearch();
         String province = placeRequest.getProvince();
         String type = placeRequest.getType();
