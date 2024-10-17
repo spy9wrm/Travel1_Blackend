@@ -12,6 +12,7 @@ import su.project.travel.model.request.PlaceRequest;
 import su.project.travel.model.request.UserIdRequest;
 import su.project.travel.model.response.PlaceResponse;
 import su.project.travel.model.response.PredictResponse;
+import su.project.travel.model.response.PredictResponse2;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.PlaceRepository;
 import su.project.travel.utils.TranModelCachingUtils;
@@ -40,7 +41,9 @@ public class PlaceService {
             UserIdRequest userIdRequest = new UserIdRequest();
             userIdRequest.setUserId(userid);
             String predict = "";
+            String predict2 = "";
             List<PredictResponse> predictResponse = new ArrayList<>();
+            List<PredictResponse2> predictResponse2 = new ArrayList<>();
 
             if (StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
 
@@ -48,18 +51,25 @@ public class PlaceService {
                 if (tranModelCachingUtils.cache.containsKey(userid)) {
 
                     predict = tranModelCachingUtils.cache.get(userid);
+                    predict2 = tranModelCachingUtils.cache.get(userid);
                 } else {
 
                     predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
+                    predict2 = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/collab-users", userIdRequest);
 
                     tranModelCachingUtils.cache.put(userid, predict);
+                    tranModelCachingUtils.cache.put(userid, predict2);
                 }
 
-                log.info(predict);
+                log.info("predict for python 1"+predict);
+                log.info("predict for python 1"+predict2);
 
                 predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {
                 });
+                predictResponse2 = objectMapper.readValue(predict2, new TypeReference<List<PredictResponse2>>() {
+                });
                 log.info(predictResponse.getFirst().getPlaceName());
+                log.info(String.valueOf(predictResponse2.getFirst().getPlaceId()));
             }
 
 

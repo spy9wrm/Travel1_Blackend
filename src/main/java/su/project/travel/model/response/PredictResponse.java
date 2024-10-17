@@ -26,3 +26,4 @@ public class PredictResponse {
     private double similarityScore;
 
 }
+

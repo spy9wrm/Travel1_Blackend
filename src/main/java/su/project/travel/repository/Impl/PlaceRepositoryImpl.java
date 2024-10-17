@@ -35,21 +35,19 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-
     @Override
     public List<PlaceResponse> getPlace(PlaceRequest placeRequest, List<PredictResponse> predictResponseList) {
         String sql = """
-            SELECT place_id, name, description, type, photo, tourist_type,
-                   maximum_attendee, has_map, latitude, longitude,
-                   telephone, email, street_address, city,
-                   city_sub_division, country, pr.province_name_th as country_sub_division,
-                   post_code FROM tb_place pl
-                LEFT JOIN tb_province pr ON pl.country_sub_division = pr.province_id
-            WHERE 1=1
-            """;
+        SELECT place_id, name, description, type, photo, tourist_type,
+               maximum_attendee, has_map, latitude, longitude,
+               telephone, email, street_address, city,
+               city_sub_division, country, pr.province_name_th as country_sub_division,
+               post_code FROM tb_place pl
+            LEFT JOIN tb_province pr ON pl.country_sub_division = pr.province_id
+        WHERE 1=1
+        """;
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        String x = "";
         String name = placeRequest.getSearch();
         String province = placeRequest.getProvince();
         String type = placeRequest.getType();
@@ -58,7 +56,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         if(StringUtils.isEmpty(name) && StringUtils.isEmpty(province) && StringUtils.isEmpty(type) && StringUtils.isEmpty(groups)) {
             if (!predictResponseList.isEmpty()) {
                 List<String> predictNames = predictResponseList.stream()
-                        .map(PredictResponse::getPlaceName)  // Assuming PlaceResponse has a getName() method
+                        .map(PredictResponse::getPlaceName)
                         .collect(Collectors.toList());
 
                 sql += " AND pl.name IN (:predict)";
@@ -113,6 +111,30 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 place.setCountry(rs.getString("country"));
                 place.setCountrySubDivision(rs.getString("country_sub_division"));
                 place.setPostCode(rs.getString("post_code"));
+
+
+                String sqlOpeningHours = """
+                SELECT td.name_th as day_of_week, opens, closes
+                FROM tb_day td
+                         LEFT JOIN (SELECT place_id, day_of_week, opens, closes
+                                    FROM tb_place_opening_hours
+                                    WHERE place_id = ?) ph
+                         ON ph.day_of_week = td.day_id
+                ORDER BY td.day_id
+                """;
+
+                List<PlaceOpeningHours> openingHours = jdbcTemplate.query(sqlOpeningHours, new Object[]{rs.getInt("place_id")},
+                        (rsOpening, rowNumOpening) -> {
+                            PlaceOpeningHours hours = new PlaceOpeningHours();
+                            hours.setDayOfWeek(rsOpening.getString("day_of_week"));
+                            hours.setOpens(rsOpening.getString("opens"));
+                            hours.setCloses(rsOpening.getString("closes"));
+                            return hours;
+                        }
+                );
+
+                place.setOpeningHours(openingHours);
+
                 return place;
             }
 
@@ -131,7 +153,6 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             }
         });
     }
-
 
     public List<PlaceResponse> getPlaceDetails(PlaceDetailsRequest placeDetailsRequest) {
         String sql = """
