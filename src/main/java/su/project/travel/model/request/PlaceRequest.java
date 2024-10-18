@@ -12,4 +12,5 @@ public class PlaceRequest {
     private String province;
     private String type;
     private String touristType;
+    private String typePredict;
 }

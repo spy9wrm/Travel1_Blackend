@@ -36,7 +36,7 @@ public class PlaceController {
 
     @PostMapping("getPlaceDetails")
     public ResponseModel<PlaceResponse> getPlaceDetails(@RequestBody PlaceDetailsRequest placeRequest) {
-        log.info("PlaceController -> GetPlace");
+        log.info("PlaceController -> GetPlaceDetail");
 
         return this.placeService.getPlaceDetails(placeRequest);
     }

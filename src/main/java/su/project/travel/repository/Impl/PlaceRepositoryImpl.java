@@ -54,13 +54,20 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         String groups = placeRequest.getTouristType();
 
         if(StringUtils.isEmpty(name) && StringUtils.isEmpty(province) && StringUtils.isEmpty(type) && StringUtils.isEmpty(groups)) {
-            if (!predictResponseList.isEmpty()) {
+            if (!predictResponseList.isEmpty() && placeRequest.getTypePredict().equalsIgnoreCase("content")) {
                 List<String> predictNames = predictResponseList.stream()
                         .map(PredictResponse::getPlaceName)
                         .collect(Collectors.toList());
 
                 sql += " AND pl.name IN (:predict)";
                 params.addValue("predict", predictNames);
+            }else if(!predictResponseList.isEmpty() && placeRequest.getTypePredict().equalsIgnoreCase("collab")){
+                List<Integer> predictId = predictResponseList.stream()
+                        .map(PredictResponse::getPlaceId)
+                        .collect(Collectors.toList());
+
+                sql += " AND pl.place_id IN (:predict)";
+                params.addValue("predict", predictId);
             }
         }
 
@@ -84,7 +91,6 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             params.addValue("type", type);
         }
 
-        sql += " ORDER BY pl.place_id ";
         sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
         params.addValue("offset", placeRequest.getPage() * placeRequest.getSize());
         params.addValue("limit", placeRequest.getSize());

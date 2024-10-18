@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class TranModelCachingUtils {
 
-    public  ConcurrentHashMap<Integer,String> cache = new ConcurrentHashMap<>();
+    public  ConcurrentHashMap<Integer,String> contentCache = new ConcurrentHashMap<>();
+    public  ConcurrentHashMap<Integer,String> collabCache= new ConcurrentHashMap<>();
 
 }

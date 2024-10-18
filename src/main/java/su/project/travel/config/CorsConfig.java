@@ -20,7 +20,7 @@ public class CorsConfig implements CorsConfigurationSource {
     @Override
     public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(ALLOWED_HEADERS);
+        configuration.setAllowedOriginPatterns(ALLOWED_ORIGINS);
         configuration.setAllowedHeaders(ALLOWED_HEADERS);
         configuration.setAllowedMethods(ALLOWED_METHODS);
         configuration.setAllowCredentials(true);

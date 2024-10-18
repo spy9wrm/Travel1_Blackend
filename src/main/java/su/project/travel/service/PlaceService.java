@@ -34,42 +34,44 @@ public class PlaceService {
         this.tranModelCachingUtils = tranModelCachingUtils;
     }
 
-    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest, Integer userid) {
+    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest, Integer userid ) {
         ResponseModel<List<PlaceResponse>> responseModel = new ResponseModel<>();
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             UserIdRequest userIdRequest = new UserIdRequest();
             userIdRequest.setUserId(userid);
             String predict = "";
-            String predict2 = "";
             List<PredictResponse> predictResponse = new ArrayList<>();
-            List<PredictResponse2> predictResponse2 = new ArrayList<>();
 
             if (StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
 
 
-                if (tranModelCachingUtils.cache.containsKey(userid)) {
 
-                    predict = tranModelCachingUtils.cache.get(userid);
-                    predict2 = tranModelCachingUtils.cache.get(userid);
-                } else {
+                    if(placeRequest.getTypePredict().equalsIgnoreCase("content")) {
+                        if(tranModelCachingUtils.contentCache.containsKey(userid)){
+                            predict = tranModelCachingUtils.contentCache.get(userid);
+                        }else{
+                            predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
+                        }
+                        tranModelCachingUtils.contentCache.put(userid, predict);
+                    }
 
-                    predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
-                    predict2 = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/collab-users", userIdRequest);
+                    else if(placeRequest.getTypePredict().equalsIgnoreCase("collab")){
 
-                    tranModelCachingUtils.cache.put(userid, predict);
-                    tranModelCachingUtils.cache.put(userid, predict2);
-                }
+//                        if(tranModelCachingUtils.collabCache.containsKey(userid)){
+//                            predict = tranModelCachingUtils.collabCache.get(userid);
+//                        }else{
+                            predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/collab-users", userIdRequest);
+//                        }
+//                        tranModelCachingUtils.collabCache.put(userid, predict);
+                    }
 
                 log.info("predict for python 1"+predict);
-                log.info("predict for python 1"+predict2);
 
                 predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {
                 });
-                predictResponse2 = objectMapper.readValue(predict2, new TypeReference<List<PredictResponse2>>() {
-                });
+
                 log.info(predictResponse.getFirst().getPlaceName());
-                log.info(String.valueOf(predictResponse2.getFirst().getPlaceId()));
             }
 
 

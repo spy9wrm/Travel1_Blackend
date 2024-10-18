@@ -129,8 +129,11 @@ public class TripService {
         ResponseModel<Void> responseModel = new ResponseModel<>();
 
         try{
-            this.tranModelCachingUtils.cache.remove(currentUser.getUserId());
+            this.tranModelCachingUtils.contentCache.remove(currentUser.getUserId());
+//            this.tranModelCachingUtils.collabCache.remove(currentUser.getUserId());
+
             this.tripRepository.updateUserRating(tripDetails);
+
             responseModel.setCode(200);
             responseModel.setMessage("ok");
         }catch (Exception e) {
