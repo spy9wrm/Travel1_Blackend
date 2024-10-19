@@ -42,7 +42,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                maximum_attendee, has_map, latitude, longitude,
                telephone, email, street_address, city,
                city_sub_division, country, pr.province_name_th as country_sub_division,
-               post_code FROM tb_place pl
+               post_code, COUNT(*) OVER() as total_places FROM tb_place pl
             LEFT JOIN tb_province pr ON pl.country_sub_division = pr.province_id
         WHERE 1=1
         """;
@@ -117,7 +117,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 place.setCountry(rs.getString("country"));
                 place.setCountrySubDivision(rs.getString("country_sub_division"));
                 place.setPostCode(rs.getString("post_code"));
-
+                place.setTotal(rs.getInt("total_places"));
 
                 String sqlOpeningHours = """
                 SELECT td.name_th as day_of_week, opens, closes

@@ -28,4 +28,5 @@ public class PlaceResponse {
     private String countrySubDivision;
     private String postCode;
     private List<PlaceOpeningHours> openingHours;
+    private Integer total;
 }
