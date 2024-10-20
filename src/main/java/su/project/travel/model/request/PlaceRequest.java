@@ -13,4 +13,5 @@ public class PlaceRequest {
     private String type;
     private String touristType;
     private String typePredict;
+    private Integer placeId;
 }

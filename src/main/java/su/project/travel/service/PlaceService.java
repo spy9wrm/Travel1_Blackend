@@ -12,7 +12,6 @@ import su.project.travel.model.request.PlaceRequest;
 import su.project.travel.model.request.UserIdRequest;
 import su.project.travel.model.response.PlaceResponse;
 import su.project.travel.model.response.PredictResponse;
-import su.project.travel.model.response.PredictResponse2;
 import su.project.travel.model.response.ResponseModel;
 import su.project.travel.repository.PlaceRepository;
 import su.project.travel.utils.TranModelCachingUtils;
@@ -34,39 +33,42 @@ public class PlaceService {
         this.tranModelCachingUtils = tranModelCachingUtils;
     }
 
-    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest, Integer userid ) {
+    public ResponseModel<List<PlaceResponse>> getAllPlace(PlaceRequest placeRequest, Integer userid) {
         ResponseModel<List<PlaceResponse>> responseModel = new ResponseModel<>();
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             UserIdRequest userIdRequest = new UserIdRequest();
             userIdRequest.setUserId(userid);
+
+            String key = userIdRequest.getUserId().toString();
+
+
+            if (ObjectUtils.isNotEmpty(placeRequest.getPlaceId())) {
+                userIdRequest.setPlaceId(placeRequest.getPlaceId());
+                key += key + "_" + placeRequest.getPlaceId();
+            }
             String predict = "";
             List<PredictResponse> predictResponse = new ArrayList<>();
 
             if (StringUtils.isEmpty(placeRequest.getSearch()) && StringUtils.isEmpty(placeRequest.getProvince()) && StringUtils.isEmpty(placeRequest.getType()) && StringUtils.isEmpty(placeRequest.getTouristType())) {
-
-
-
-                    if(placeRequest.getTypePredict().equalsIgnoreCase("content")) {
-                        if(tranModelCachingUtils.contentCache.containsKey(userid)){
-                            predict = tranModelCachingUtils.contentCache.get(userid);
-                        }else{
-                            predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
-                        }
-                        tranModelCachingUtils.contentCache.put(userid, predict);
+                if (placeRequest.getTypePredict().equalsIgnoreCase("content")) {
+                    if (tranModelCachingUtils.contentCache.containsKey(key)) {
+                        predict = tranModelCachingUtils.contentCache.get(key);
+                    } else {
+                        predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/predict-places", userIdRequest);
                     }
-
-                    else if(placeRequest.getTypePredict().equalsIgnoreCase("collab")){
+                    tranModelCachingUtils.contentCache.put(key, predict);
+                } else if (placeRequest.getTypePredict().equalsIgnoreCase("collab")) {
 
 //                        if(tranModelCachingUtils.collabCache.containsKey(userid)){
 //                            predict = tranModelCachingUtils.collabCache.get(userid);
 //                        }else{
-                            predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/collab-users", userIdRequest);
+                    predict = this.predictAdapter.makeHttpPostRequest("http://127.0.0.1:8081/collab-users", userIdRequest);
 //                        }
 //                        tranModelCachingUtils.collabCache.put(userid, predict);
-                    }
+                }
 
-                log.info("predict for python 1"+predict);
+                log.info("predict for python 1" + predict);
 
                 predictResponse = objectMapper.readValue(predict, new TypeReference<List<PredictResponse>>() {
                 });

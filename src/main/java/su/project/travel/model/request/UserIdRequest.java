@@ -7,4 +7,5 @@ import lombok.Setter;
 @Getter
 public class UserIdRequest {
     private Integer userId;
+    private Integer placeId;
 }

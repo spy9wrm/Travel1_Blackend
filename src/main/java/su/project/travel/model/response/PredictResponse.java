@@ -24,6 +24,5 @@ public class PredictResponse {
 
     @JsonProperty("similarity_score")
     private double similarityScore;
-
 }
 

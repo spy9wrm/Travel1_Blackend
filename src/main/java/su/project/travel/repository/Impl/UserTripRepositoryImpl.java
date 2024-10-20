@@ -31,7 +31,7 @@ public class UserTripRepositoryImpl implements TripRepository {
     }
 
     @Override
-    public Integer insertTbTrip(Integer userId,String tripName) {
+    public Integer insertTbTrip(Integer userId, String tripName) {
         String sql = """
                 insert into tb_trip (user_id, create_date, trip_name)
                 values (:user_id, :create_date, :trip_name)
@@ -44,13 +44,13 @@ public class UserTripRepositoryImpl implements TripRepository {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource, keyHolder, new String[] {"trip_id"});
+        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource, keyHolder, new String[]{"trip_id"});
 
         return keyHolder.getKey().intValue();
     }
 
     @Override
-    public void insertTbTripDetails(Integer tripId,Integer placeId,LocalDateTime planDate) {
+    public void insertTbTripDetails(Integer tripId, Integer placeId, LocalDateTime planDate) {
         String sql = """
                 insert into tb_trip_detail (trip_id,place_id,plan_date)
                 values (:trip_id, :place_id, :plan_date)
@@ -58,13 +58,13 @@ public class UserTripRepositoryImpl implements TripRepository {
 
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("trip_id", tripId);
-        mapSqlParameterSource.addValue("place_id",placeId);
-        mapSqlParameterSource.addValue("plan_date",planDate);
+        mapSqlParameterSource.addValue("place_id", placeId);
+        mapSqlParameterSource.addValue("plan_date", planDate);
 
         namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
     }
 
-    public void updateTbTrip(Integer userId,String tripName,Integer tripId) {
+    public void updateTbTrip(Integer userId, String tripName, Integer tripId) {
         String sql = """
                 UPDATE tb_trip SET trip_name = :trip_name WHERE trip_id = :trip_id AND user_id = :user_id;
                 """;
@@ -76,10 +76,10 @@ public class UserTripRepositoryImpl implements TripRepository {
 
     }
 
-    public void updateTbTripDetails(Integer tripId,List<TripDetails> tripDetailsList) {
+    public void updateTbTripDetails(Integer tripId, List<TripDetails> tripDetailsList) {
         List<Integer> getTripDetailIds = new ArrayList<>();
         for (TripDetails tripDetails : tripDetailsList) {
-            if(ObjectUtils.isNotEmpty(tripDetails.getTripDetailId())){
+            if (ObjectUtils.isNotEmpty(tripDetails.getTripDetailId())) {
                 getTripDetailIds.add(tripDetails.getTripDetailId());
             }
         }
@@ -91,27 +91,11 @@ public class UserTripRepositoryImpl implements TripRepository {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("trip_id", tripId);
         mapSqlParameterSource.addValue("trip_detail_id", getTripDetailIds);
-        if(!getTripDetailIds.isEmpty()){
+        if (!getTripDetailIds.isEmpty()) {
             namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
         }
-        for(TripDetails tripDetails : tripDetailsList) {
-            if(ObjectUtils.isEmpty(tripDetails.getTripDetailId())) {
-
-                String planDateString = tripDetails.getPlanDate();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                LocalDateTime planDate = LocalDateTime.parse(planDateString, formatter);
-
-               String sql2 =
-                       """
-                    INSERT INTO tb_trip_detail (trip_id,place_id,plan_date) values (:trip_id, :place_id, :plan_date)
-                    """;
-                MapSqlParameterSource mapSqlParameterSource2 = new MapSqlParameterSource();
-                mapSqlParameterSource2.addValue("trip_id", tripId);
-                mapSqlParameterSource2.addValue("plan_date",planDate);
-                mapSqlParameterSource2.addValue("place_id",tripDetails.getPlaceId());
-
-                namedParameterJdbcTemplate.update(sql2, mapSqlParameterSource2);
-            }else{
+        for (TripDetails tripDetails : tripDetailsList) {
+            if (ObjectUtils.isEmpty(tripDetails.getTripDetailId())) {
 
                 String planDateString = tripDetails.getPlanDate();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -119,12 +103,28 @@ public class UserTripRepositoryImpl implements TripRepository {
 
                 String sql2 =
                         """
-                     UPDATE tb_trip_detail SET plan_date = :plan_date WHERE trip_detail_id = :trip_detail_id;
-                     """;
+                                INSERT INTO tb_trip_detail (trip_id,place_id,plan_date) values (:trip_id, :place_id, :plan_date)
+                                """;
+                MapSqlParameterSource mapSqlParameterSource2 = new MapSqlParameterSource();
+                mapSqlParameterSource2.addValue("trip_id", tripId);
+                mapSqlParameterSource2.addValue("plan_date", planDate);
+                mapSqlParameterSource2.addValue("place_id", tripDetails.getPlaceId());
+
+                namedParameterJdbcTemplate.update(sql2, mapSqlParameterSource2);
+            } else {
+
+                String planDateString = tripDetails.getPlanDate();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime planDate = LocalDateTime.parse(planDateString, formatter);
+
+                String sql2 =
+                        """
+                                UPDATE tb_trip_detail SET plan_date = :plan_date WHERE trip_detail_id = :trip_detail_id;
+                                """;
 
                 MapSqlParameterSource mapSqlParameterSource2 = new MapSqlParameterSource();
-                mapSqlParameterSource2.addValue("plan_date",planDate);
-                mapSqlParameterSource2.addValue("trip_detail_id",tripDetails.getTripDetailId());
+                mapSqlParameterSource2.addValue("plan_date", planDate);
+                mapSqlParameterSource2.addValue("trip_detail_id", tripDetails.getTripDetailId());
                 namedParameterJdbcTemplate.update(sql2, mapSqlParameterSource2);
             }
         }
@@ -140,7 +140,8 @@ public class UserTripRepositoryImpl implements TripRepository {
                         CASE
                         WHEN CURRENT_DATE > MAX(td.plan_date) THEN 'Y'
                             ELSE 'N'
-                        END AS is_finish
+                        END AS is_finish,
+                        tt.is_review
                 from tb_trip tt
                          inner join tb_trip_detail td on td.trip_id = tt.trip_id
                          inner join (select place_id, unnest(photo) as photo
@@ -162,6 +163,7 @@ public class UserTripRepositoryImpl implements TripRepository {
                 response.setPhoto(rs.getString("photo"));
                 response.setCreateDate(rs.getString("create_date"));
                 response.setIsFinish(rs.getString("is_finish"));
+                response.setIsReview(rs.getString("is_review"));
                 return response;
             }
         });
@@ -179,31 +181,32 @@ public class UserTripRepositoryImpl implements TripRepository {
     @Override
     public List<TripResponse> getTripDetails(Integer tripId) {
         String tripSql = """
-            SELECT 
-                trip_id,
-                trip_name,
-                create_date
-            FROM 
-                tb_trip
-            WHERE 
-                trip_id = :trip_id;
-            """;
+                SELECT 
+                    trip_id,
+                    trip_name,
+                    create_date
+                FROM 
+                    tb_trip
+                WHERE 
+                    trip_id = :trip_id;
+                """;
 
         String tripDetailSql = """
-            SELECT
-                td.trip_detail_id,
-                td.place_id,
-                td.plan_date,
-                tp.name,
-                tp.photo[1] AS photo,
-                tp.longitude,
-                tp.latitude
-            FROM
-                tb_trip_detail td
-                INNER JOIN tb_place tp ON tp.place_id = td.place_id
-            WHERE
-                td.trip_id = :trip_id;
-            """;
+                SELECT
+                    td.trip_detail_id,
+                    td.place_id,
+                    td.plan_date,
+                    tp.name,
+                    tp.photo[1] AS photo,
+                    tp.longitude,
+                    tp.latitude,
+                    td.user_rating
+                FROM
+                    tb_trip_detail td
+                    INNER JOIN tb_place tp ON tp.place_id = td.place_id
+                WHERE
+                    td.trip_id = :trip_id;
+                """;
 
         MapSqlParameterSource parameter = new MapSqlParameterSource();
         parameter.addValue("trip_id", tripId);
@@ -235,6 +238,7 @@ public class UserTripRepositoryImpl implements TripRepository {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 details.setPlanDate(planDate.toLocalDateTime().format(formatter));
                 details.setTripDetailId(rs.getInt("trip_detail_id"));
+                details.setUserRating(rs.getInt("user_rating"));
                 return details;
             }
         });
@@ -248,12 +252,20 @@ public class UserTripRepositoryImpl implements TripRepository {
         String sql = """
                 UPDATE tb_trip_detail SET user_rating = :user_rating WHERE trip_detail_id = :trip_detail_id;
                 """;
-        for(int i =0;i<tripDetails.size();i++) {
+        for (int i = 0; i < tripDetails.size(); i++) {
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
             mapSqlParameterSource.addValue("user_rating", tripDetails.get(i).getUserRating());
             mapSqlParameterSource.addValue("trip_detail_id", tripDetails.get(i).getTripDetailId());
             namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
         }
+        String sql2 = """
+                UPDATE tb_trip
+                SET is_review = 'Y'
+                WHERE trip_id = (select trip_id from tb_trip_detail where trip_detail_id = :trip_detials);
+                """;
+        MapSqlParameterSource parameter = new MapSqlParameterSource();
+        parameter.addValue("trip_detials", tripDetails.getFirst().getTripDetailId());
+        namedParameterJdbcTemplate.update(sql2, parameter);
 
     }
 

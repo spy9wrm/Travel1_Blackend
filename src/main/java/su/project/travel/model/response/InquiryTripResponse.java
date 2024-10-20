@@ -11,4 +11,5 @@ public class InquiryTripResponse {
     private String photo;
     private String createDate;
     private String isFinish;
+    private String isReview;
 }
